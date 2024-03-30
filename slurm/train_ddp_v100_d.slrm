@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=128G
+#SBATCH -p gputest
+#SBATCH -t 00:15:00
+#SBATCH --gpus-per-node=v100:4
+#SBATCH --account=project_2001659
+#SBATCH -o /scratch/project_2001659/sonjiang/view-fusion/logs/slurm/slurm-%A_%a.out
+#SBATCH -e /scratch/project_2001659/sonjiang/view-fusion/logs/slurm/slurm-%A_%a.err
+
+export PATH="/scratch/project_2001659/sonjiang/view-fusion/venv/bin:$PATH"
+
+MASTER_ADDR=`perl -le '$_=$ENV{"SLURM_JOB_NODELIST"}; s/,.*//; s/-.*//; s/\[//; print'`
+MASTER_PORT=6777
+
+echo $MASTER_ADDR
+srun --jobid $SLURM_JOBID torchrun --nnodes=2 --nproc_per_node=4 --node_rank $SLURM_PROCID --rdzv_endpoint $MASTER_ADDR:$MASTER_PORT --rdzv_backend c10d --max_restarts 0 --tee 3 --log_dir /scratch/project_2001659/sonjiang/view-fusion/logs ../main.py -c /scratch/project_2001659/sonjiang/view-fusion/configs/small-v100-4-2.yaml -g -t
