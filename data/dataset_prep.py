@@ -66,12 +66,13 @@ def shard_dataset(src_dir, size_dict, dest_dir, split="test", percent=100, shard
     for key in metadata.keys():
         for dir_name in metadata[key]["list"]:
 
-            sample = {"__key__": dir_name.split("/")[-1]}
+            prefix = split + str(shard_idx) + key + dir_name.split("/")[-1]
+            sample = {"__key__": prefix}
             for i in range(24):
                 fname = f"{i:04}.png"
-                sample[fname] = src_zip.read(f"{dir_name}/image/{fname}")
+                sample[prefix+fname] = src_zip.read(f"{dir_name}/image/{fname}")
 
-            sample["cameras"] = src_zip.read(f"{dir_name}/cameras.npz")
+            sample[prefix+"cameras"] = src_zip.read(f"{dir_name}/cameras.npz")
             tar_sink.write(sample)
             sample_no += 1
             if sample_no == limit:

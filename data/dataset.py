@@ -9,7 +9,8 @@ from einops import rearrange
 
 def process_sample(sample, mode="train"):
     images_idx = np.arange(24)
-    images = [sample[f"{i:04d}.png"] for i in images_idx]
+    hashkey = sample["__key__"]
+    images = [sample[f"{hashkey}{i:04d}.png"] for i in images_idx]
     images = np.stack(images, 0).astype(np.float32)
     angle = np.asarray(
         [
@@ -33,7 +34,7 @@ def process_sample(sample, mode="train"):
         "cond": cond_images[1:],
         "all_views": images,
         "angle": angle,
-        "scene_hash": sample["__key__"],
+        "scene_hash": hashkey,
     }
 
     return result
