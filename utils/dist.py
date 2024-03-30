@@ -14,16 +14,17 @@ def init_ddp():
     """
     try:
         local_rank = int(os.environ["LOCAL_RANK"])
+        rank = int(os.environ["RANK"])
         world_size = int(os.environ["WORLD_SIZE"])
     except KeyError:
-        return 0, 1  # Single GPU run
+        return 0, 0, 1  # Single GPU run
 
     dist.init_process_group(backend="nccl", timeout=timedelta(hours=3))
-    print(f"Initialized process {local_rank} / {world_size}")
+    print(f"Initialized process {rank} / {world_size}")
     torch.cuda.set_device(local_rank)
 
     setup_dist_print(local_rank == 0)
-    return local_rank, world_size
+    return local_rank, rank, world_size
 
 
 def setup_dist_print(is_main):

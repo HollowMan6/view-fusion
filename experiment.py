@@ -45,10 +45,10 @@ class Experiment:
 
         # Initialize ddp (parallelization)
         if args.gpu:
-            self.rank, self.world_size = init_ddp()
-            self.device = torch.device(f"cuda:{self.rank}")
+            self.local_rank, self.rank, self.world_size = init_ddp()
+            self.device = torch.device(f"cuda:{self.local_rank}")
         else:
-            self.rank, self.world_size = init_ddp()
+            self.local_rank, self.rank, self.world_size = init_ddp()
             self.device = torch.device("cpu")
 
         args.wandb = args.wandb and self.rank == 0
@@ -95,7 +95,7 @@ class Experiment:
 
         if self.world_size > 1:
             self.model = DistributedDataParallel(
-                self.model, device_ids=[self.rank], output_device=self.rank
+                self.model, device_ids=[self.local_rank], output_device=self.local_rank
             )
             model_module = self.model.module
         else:

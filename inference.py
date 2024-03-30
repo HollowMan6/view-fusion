@@ -61,10 +61,10 @@ def inference(args):
         config = yaml.load(f, Loader=yaml.CLoader)
 
     if args.gpu_ids is not None:
-        rank, world_size = init_ddp()
-        device = torch.device(f"cuda:{rank}")
+        local_rank, rank, world_size = init_ddp()
+        device = torch.device(f"cuda:{local_rank}")
     else:
-        rank, world_size = init_ddp()
+        local_rank, rank, world_size = init_ddp()
         device = torch.device("cpu")
 
     args.wandb = args.wandb and rank == 0
@@ -143,7 +143,7 @@ def inference(args):
     model.set_new_noise_schedule(device=device, phase="train")
 
     if world_size > 1:
-        model = DistributedDataParallel(model, device_ids=[rank], output_device=rank)
+        model = DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
         model_module = model.module
     else:
         model_module = model
